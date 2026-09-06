@@ -1,23 +1,59 @@
 # ColorPickerCompose
 
+[![Platform](https://img.shields.io/badge/platform-android-green.svg)](http://developer.android.com/index.html)
+[![API](https://img.shields.io/badge/API-24%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=24)
+[![Download](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/slaviboy/ColorPickerCompose/releases/tag/2.0.0)
+
 A pure [Jetpack Compose](https://developer.android.com/jetpack/compose) color picker library — a from-scratch rewrite of the View/XML-based [ColorPickerKotlin](https://github.com/slaviboy/ColorPickerKotlin) library, with the same set of color windows and composed pickers, but built entirely with Compose `Canvas`, gestures, and state instead of `View`, `Bitmap` caching, and XML attributes.
 
 - **`:colorpicker`** — the library module. No Material dependency; everything is built on `androidx.compose.foundation`/`ui`.
 - **`:app`** — a demo app showing all three pickers sharing one color, with a value text field, format-switch buttons, and a random-color button.
 
-## Add the dependency
+## Add to your project
 
+Add the JitPack repository.
+
+**`settings.gradle.kts` (Kotlin DSL)**
 ```kotlin
-// settings.gradle.kts
-include(":colorpicker")
-
-// app/build.gradle.kts
-dependencies {
-    implementation(project(":colorpicker"))
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
 }
 ```
 
-(This library isn't published anywhere yet — it's a project module. Copy the `colorpicker/` folder into your own project, or turn it into a proper Maven artifact, to use it elsewhere.)
+**`settings.gradle` (Groovy DSL)**
+```groovy
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+Add the dependency.
+
+**`build.gradle.kts` (Kotlin DSL)**
+```kotlin
+dependencies {
+    implementation("com.github.slaviboy:colorpicker:2.0.0")
+}
+```
+
+**`build.gradle` (Groovy DSL)**
+```groovy
+dependencies {
+    implementation 'com.github.slaviboy:colorpicker:2.0.0'
+}
+```
+
+> Note the artifact id is `colorpicker` (the module name), not the repo name `ColorPickerCompose` — this repo publishes the `:colorpicker` module directly via JitPack.
+
+Alternatively, if you'd rather vendor the source directly: copy the `colorpicker/` folder into your own multi-module project and `include(":colorpicker")` in `settings.gradle.kts`.
 
 ## Quick start
 
