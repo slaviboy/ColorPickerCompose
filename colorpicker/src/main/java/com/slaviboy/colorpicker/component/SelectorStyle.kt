@@ -15,7 +15,7 @@ data class SelectorStyle(
     val extraStrokeWidth: Dp = 2.dp,
     val extraStrokeColor: Color = Color.Black.copy(alpha = 0.35f),
     val borderColor: Color = Color.Black.copy(alpha = 0.18f),
-    val borderWidth: Dp = 1.dp,
+    val borderWidth: Dp = 1.dp
 )
 
 /**

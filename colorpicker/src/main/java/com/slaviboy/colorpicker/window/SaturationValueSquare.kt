@@ -30,7 +30,7 @@ fun SaturationValueSquare(
     state: ColorPickerState,
     modifier: Modifier = Modifier,
     style: SelectorStyle = SelectorStyle(),
-    cornerRadius: Dp = 8.dp,
+    cornerRadius: Dp = 8.dp
 ) {
     RectangularSelectorArea(
         modifier = modifier.aspectRatio(1f),

@@ -35,7 +35,7 @@ import kotlin.math.roundToInt
 fun HueSaturationWheel(
     state: ColorPickerState,
     modifier: Modifier = Modifier,
-    style: SelectorStyle = SelectorStyle(),
+    style: SelectorStyle = SelectorStyle()
 ) {
     CircularSelectorArea(
         modifier = modifier.aspectRatio(1f),

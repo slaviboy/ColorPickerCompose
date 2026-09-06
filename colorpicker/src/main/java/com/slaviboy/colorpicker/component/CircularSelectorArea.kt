@@ -27,7 +27,7 @@ fun CircularSelectorArea(
     onDrag: (angleDeg: Float, distanceFraction: Float) -> Unit,
     background: DrawScope.(center: Offset, radiusPx: Float) -> Unit,
     modifier: Modifier = Modifier,
-    style: SelectorStyle = SelectorStyle(),
+    style: SelectorStyle = SelectorStyle()
 ) {
     val density = LocalDensity.current
     val paddingPx = with(density) { style.contentPadding().toPx() }

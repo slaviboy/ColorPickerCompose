@@ -32,7 +32,7 @@ fun HueSlider(
     modifier: Modifier = Modifier,
     style: SelectorStyle = SelectorStyle(),
     cornerRadius: Dp = 8.dp,
-    orientation: Orientation = Orientation.Vertical,
+    orientation: Orientation = Orientation.Vertical
 ) {
     // offsetForValue/valueForOffset are pixel<->value mappers; passing size=1f turns "pixels"
     // into "fraction of the track" directly, which is exactly what LinearSelectorArea expects.

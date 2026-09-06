@@ -37,7 +37,7 @@ fun AlphaSlider(
     style: SelectorStyle = SelectorStyle(),
     cornerRadius: Dp = 8.dp,
     orientation: Orientation = Orientation.Vertical,
-    checkerSize: Dp = 6.dp,
+    checkerSize: Dp = 6.dp
 ) {
     LinearSelectorArea(
         modifier = modifier,

@@ -30,7 +30,7 @@ fun RectangularSelectorArea(
     background: DrawScope.(bounds: Rect) -> Unit,
     modifier: Modifier = Modifier,
     style: SelectorStyle = SelectorStyle(),
-    cornerRadius: Dp = 0.dp,
+    cornerRadius: Dp = 0.dp
 ) {
     val density = LocalDensity.current
     val paddingPx = with(density) { style.contentPadding().toPx() }

@@ -41,7 +41,7 @@ fun ColorValueTextField(
     textStyle: TextStyle = TextStyle.Default,
     cursorBrush: Brush = SolidColor(Color.Black),
     keyboardOptions: KeyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-    decorationBox: @Composable (innerTextField: @Composable () -> Unit) -> Unit = { it() },
+    decorationBox: @Composable (innerTextField: @Composable () -> Unit) -> Unit = { it() }
 ) {
     var rawText by remember(format) { mutableStateOf(formatColorValue(state, format)) }
     var isFocused by remember { mutableStateOf(false) }

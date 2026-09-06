@@ -38,7 +38,7 @@ fun LinearSelectorArea(
     modifier: Modifier = Modifier,
     style: SelectorStyle = SelectorStyle(),
     cornerRadius: Dp = 0.dp,
-    orientation: Orientation = Orientation.Vertical,
+    orientation: Orientation = Orientation.Vertical
 ) {
     val density = LocalDensity.current
     val mainAxisPaddingPx = with(density) { style.contentPadding().toPx() }
