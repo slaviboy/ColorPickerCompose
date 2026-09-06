@@ -6,6 +6,10 @@
 
 A pure [Jetpack Compose](https://developer.android.com/jetpack/compose) color picker library — a from-scratch rewrite of the View/XML-based [ColorPickerKotlin](https://github.com/slaviboy/ColorPickerKotlin) library, with the same set of color windows and composed pickers, but built entirely with Compose `Canvas`, gestures, and state instead of `View`, `Bitmap` caching, and XML attributes.
 
+<p align="center">
+    <img src="https://raw.githubusercontent.com/slaviboy/RepositoryImages/main/lib/color_picker_compose/Screenshot%202026-09-07%20at%200.01.17.png" alt="ColorPickerCompose demo screenshot" width="300px" />
+</p>
+
 - **`:colorpicker`** — the library module. No Material dependency; everything is built on `androidx.compose.foundation`/`ui`.
 - **`:app`** — a demo app showing all three pickers sharing one color, with a value text field, format-switch buttons, and a random-color button.
 
