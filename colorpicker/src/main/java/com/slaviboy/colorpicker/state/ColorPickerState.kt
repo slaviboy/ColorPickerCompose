@@ -1,6 +1,7 @@
 package com.slaviboy.colorpicker.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -15,9 +16,9 @@ import com.slaviboy.colorpicker.model.toRgbaColor
 
 /**
  * Single reactive source of truth for a color picker (or a group of pickers sharing one
- * instance). Canonical state is HSV ([hue],[hsvSaturation],[value]) + [alpha]; everything else
- * (HSL, HWB, CMYK, HEX, the final RGBA [color]) is derived on every read, never cached, so there
- * is no possibility of a stale copy.
+ * instance). Canonical state is HSV ([hue],[hsvSaturation],[value]) + [alpha], plus a mirrored
+ * ([hslSaturation],[lightness]) pair for HSL - see the comment on those fields for why HSL isn't
+ * purely derived from HSV like everything else.
  *
  * Every color-window composable reads only the fields it needs and calls one of the setters
  * below when the user drags its selector; because Compose recomposition re-runs any composable
@@ -26,22 +27,49 @@ import com.slaviboy.colorpicker.model.toRgbaColor
 @Stable
 class ColorPickerState internal constructor(h: Int, s: Int, v: Int, a: Int) {
 
-    // `.mod()` (not `%`) so a negative input wraps forward, e.g. -10 -> 350 instead of -10.
-    private val hueState = mutableIntStateOf(h.mod(360))
+    // Hue is stored in the CLOSED range [0,360], not wrapped into [0,359]. 0 and 360 are the same
+    // red, but the Hue slider's track has both ends showing that red - if hue only ever stored 0,
+    // dragging to the top of the slider (which computes hue=360, then would wrap to 0) would
+    // redraw the selector back at the *bottom* (0's position), visibly jumping away from the
+    // finger. Letting hue reach exactly 360 keeps "top" and "bottom" distinguishable. Every
+    // conversion in ColorConverter already treats hue 360 identically to 0 (the `i %= 6` sector
+    // step), so this loses no correctness elsewhere (e.g. the hue/saturation wheel).
+    private val hueState = mutableIntStateOf(h.coerceIn(0, 360))
     private val hsvSaturationState = mutableIntStateOf(s.coerceIn(0, 100))
     private val valueState = mutableIntStateOf(v.coerceIn(0, 100))
     private val alphaState = mutableIntStateOf(a.coerceIn(0, 255))
+
+    // HSL saturation/lightness are stored explicitly (mirroring HSV, similar to the original
+    // library's ColorConverter) rather than derived from HSV on every read, because HSV<->HSL is
+    // a *lossy* conversion at the achromatic extremes: at lightness 0 (black) or 100 (white),
+    // every saturation value maps to the same color, so converting HSV back to HSL always reports
+    // saturation 0 there. If hslSaturation were purely derived, dragging the Saturation/Lightness
+    // square to its top or bottom edge (any saturation, but lightness 0 or 100) would compute
+    // hsvSaturation=0 correctly, but then redrawing the selector *from* hsvSaturation would report
+    // saturation 0 too and snap the selector to the opposite (right) edge - even though nothing
+    // about the position the user dragged to actually changed. Storing them explicitly lets the
+    // selector stay exactly where it was dropped; they're kept in sync with HSV in both
+    // directions by [syncHslFromHsv] (best-effort, lossy) and [setSaturationLightness]
+    // (authoritative, exact) respectively.
+    private val hslSaturationState: MutableIntState
+    private val lightnessState: MutableIntState
+
+    init {
+        val initialHsl = ColorConverter.hsvToHsl(hueState.intValue, hsvSaturationState.intValue, valueState.intValue)
+        hslSaturationState = mutableIntStateOf(initialHsl.s)
+        lightnessState = mutableIntStateOf(initialHsl.l)
+    }
 
     val hue: Int get() = hueState.intValue
     val hsvSaturation: Int get() = hsvSaturationState.intValue
     val value: Int get() = valueState.intValue
     val alpha: Int get() = alphaState.intValue
+    val hslSaturation: Int get() = hslSaturationState.intValue
+    val lightness: Int get() = lightnessState.intValue
 
     // ---- derived, read-only ----
 
-    val hsl: HslColor get() = ColorConverter.hsvToHsl(hue, hsvSaturation, value)
-    val hslSaturation: Int get() = hsl.s
-    val lightness: Int get() = hsl.l
+    val hsl: HslColor get() = HslColor(hue, hslSaturation, lightness)
 
     val rgba: RgbaColor get() = ColorConverter.hsvToRgb(hue, hsvSaturation, value, alpha)
     val color: Color get() = rgba.toComposeColor()
@@ -54,38 +82,54 @@ class ColorPickerState internal constructor(h: Int, s: Int, v: Int, a: Int) {
     val hex: String get() = ColorConverter.rgbToHex(rgba.r, rgba.g, rgba.b, alpha, includeAlpha = false)
     val hexa: String get() = ColorConverter.rgbToHex(rgba.r, rgba.g, rgba.b, alpha, includeAlpha = true)
 
+    /** Best-effort resync of the HSL mirror after an HSV-side field changed; see the field comment above. */
+    private fun syncHslFromHsv() {
+        val hsl = ColorConverter.hsvToHsl(hue, hsvSaturation, value)
+        hslSaturationState.intValue = hsl.s
+        lightnessState.intValue = hsl.l
+    }
+
     // ---- writers, one per gesture-driving window (plus a few convenience overwrites) ----
 
     /** Used by HueSlider and HueSaturationWheel. */
     fun setHue(h: Int) {
-        hueState.intValue = h.mod(360)
+        hueState.intValue = h.coerceIn(0, 360)
+        syncHslFromHsv()
     }
 
     /** Used by ValueSlider. */
     fun setValue(v: Int) {
         valueState.intValue = v.coerceIn(0, 100)
+        syncHslFromHsv()
     }
 
-    /** Used by AlphaSlider. */
+    /** Used by AlphaSlider. Alpha doesn't affect hue/saturation/lightness, so no HSL resync needed. */
     fun setAlpha(a: Int) {
         alphaState.intValue = a.coerceIn(0, 255)
     }
 
     /** Used by HueSaturationWheel (CircularHS). */
     fun setHueSaturation(h: Int, s: Int) {
-        hueState.intValue = h.mod(360)
+        hueState.intValue = h.coerceIn(0, 360)
         hsvSaturationState.intValue = s.coerceIn(0, 100)
+        syncHslFromHsv()
     }
 
     /** Used by SaturationValueSquare (RectangularSV). */
     fun setSaturationValue(s: Int, v: Int) {
         hsvSaturationState.intValue = s.coerceIn(0, 100)
         valueState.intValue = v.coerceIn(0, 100)
+        syncHslFromHsv()
     }
 
-    /** Used by SaturationLightnessSquare (RectangularSL); cross-converts HSL -> HSV canonical fields. */
+    /**
+     * Used by SaturationLightnessSquare (RectangularSL). Stores (s,l) exactly (see the field
+     * comment above), then cross-converts to HSV so every other window stays in sync.
+     */
     fun setSaturationLightness(s: Int, l: Int) {
-        val hsv = ColorConverter.hslToHsv(hue, s.coerceIn(0, 100), l.coerceIn(0, 100))
+        hslSaturationState.intValue = s.coerceIn(0, 100)
+        lightnessState.intValue = l.coerceIn(0, 100)
+        val hsv = ColorConverter.hslToHsv(hue, hslSaturation, lightness)
         hsvSaturationState.intValue = hsv.s
         valueState.intValue = hsv.v
     }
@@ -102,6 +146,7 @@ class ColorPickerState internal constructor(h: Int, s: Int, v: Int, a: Int) {
         hsvSaturationState.intValue = hsv.s
         valueState.intValue = hsv.v
         alphaState.intValue = a.coerceIn(0, 255)
+        syncHslFromHsv()
     }
 
     /** Returns false (and leaves the state unmodified) if [hexString] isn't a valid hex color. */
