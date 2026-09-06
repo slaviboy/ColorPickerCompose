@@ -30,7 +30,7 @@ fun RectangularHslColorPicker(
     modifier: Modifier = Modifier,
     state: ColorPickerState = rememberColorPickerState(),
     mainSize: Dp = 220.dp,
-    sliderWidth: Dp = 36.dp,
+    sliderWidth: Dp = 38.dp,
     spacing: Dp = 12.dp,
     style: SelectorStyle = SelectorStyle(),
     valueFormat: ColorFormat = ColorFormat.Hsl,
