@@ -1,6 +1,10 @@
 package com.slaviboy.colorpicker.state
 
 import androidx.compose.ui.graphics.Color
+import com.slaviboy.colorpicker.model.ColorConverter
+import com.slaviboy.colorpicker.model.HslColor
+import com.slaviboy.colorpicker.model.RgbaColor
+import com.slaviboy.colorpicker.model.toComposeColor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -122,5 +126,93 @@ class ColorPickerStateTest {
         state.setSaturationLightness(s = 100, l = 100)
         state.setSaturationLightness(s = 100, l = 50)
         assertTrue(abs(state.hslSaturation - 100) <= 1)
+    }
+
+    @Test
+    fun `setSaturationValue updates hsv saturation and value directly without touching hue`() {
+        val state = newState(h = 100, s = 0, v = 0)
+        state.setSaturationValue(s = 70, v = 90)
+        assertEquals(70, state.hsvSaturation)
+        assertEquals(90, state.value)
+        assertEquals(100, state.hue)
+    }
+
+    @Test
+    fun `setSaturationValue clamps out of range inputs`() {
+        val state = newState(h = 0, s = 0, v = 0)
+        state.setSaturationValue(s = -10, v = 150)
+        assertEquals(0, state.hsvSaturation)
+        assertEquals(100, state.value)
+    }
+
+    @Test
+    fun `setValue clamps out of range inputs`() {
+        val state = newState(h = 0, s = 0, v = 0)
+        state.setValue(-5)
+        assertEquals(0, state.value)
+        state.setValue(500)
+        assertEquals(100, state.value)
+    }
+
+    @Test
+    fun `setAlpha clamps out of range inputs`() {
+        val state = newState(h = 0, s = 0, v = 0)
+        state.setAlpha(-5)
+        assertEquals(0, state.alpha)
+        state.setAlpha(500)
+        assertEquals(255, state.alpha)
+    }
+
+    @Test
+    fun `setHue clamps negative input to zero instead of wrapping`() {
+        // Hue is stored in the closed [0,360] range (see the field comment in ColorPickerState) -
+        // out-of-range input clamps at the boundary rather than wrapping like modulo would.
+        val state = newState(h = 100, s = 50, v = 50)
+        state.setHue(-10)
+        assertEquals(0, state.hue)
+    }
+
+    @Test
+    fun `setCmyk converts through rgb and preserves alpha`() {
+        val state = newState(h = 0, s = 0, v = 0, a = 200)
+        state.setCmyk(c = 0, m = 100, y = 100, k = 0) // pure red in CMYK
+        assertEquals(RgbaColor(255, 0, 0, 200), state.rgba)
+    }
+
+    @Test
+    fun `setHwb converts through rgb and preserves alpha`() {
+        val state = newState(h = 0, s = 0, v = 0, a = 200)
+        state.setHwb(h = 0, w = 0, b = 0) // pure red in HWB
+        assertEquals(RgbaColor(255, 0, 0, 200), state.rgba)
+    }
+
+    @Test
+    fun `setRgba sets every channel and derives hsv accordingly`() {
+        val state = newState(h = 0, s = 0, v = 0, a = 0)
+        state.setRgba(0, 255, 0, 128) // pure green
+        assertEquals(120, state.hue)
+        assertEquals(100, state.hsvSaturation)
+        assertEquals(100, state.value)
+        assertEquals(128, state.alpha)
+    }
+
+    @Test
+    fun `setHexString accepts valid hex and updates rgba`() {
+        val state = newState(h = 0, s = 0, v = 0)
+        val ok = state.setHexString("#3F8CB5")
+        assertTrue(ok)
+        assertEquals(RgbaColor(0x3F, 0x8C, 0xB5, 255), state.rgba)
+    }
+
+    @Test
+    fun `derived getters are internally consistent with each other and with ColorConverter`() {
+        val state = newState(h = 210, s = 40, v = 60, a = 180)
+        assertEquals(state.rgba.toComposeColor(), state.color)
+        assertEquals(HslColor(state.hue, state.hslSaturation, state.lightness), state.hsl)
+        assertEquals(ColorConverter.hsvToRgb(state.hue, 100, 100).toComposeColor(), state.baseHueColor)
+        assertEquals(ColorConverter.rgbToHwb(state.rgba.r, state.rgba.g, state.rgba.b), state.hwb)
+        assertEquals(ColorConverter.rgbToCmyk(state.rgba.r, state.rgba.g, state.rgba.b), state.cmyk)
+        assertEquals(ColorConverter.rgbToHex(state.rgba.r, state.rgba.g, state.rgba.b, state.alpha, includeAlpha = false), state.hex)
+        assertEquals(ColorConverter.rgbToHex(state.rgba.r, state.rgba.g, state.rgba.b, state.alpha, includeAlpha = true), state.hexa)
     }
 }

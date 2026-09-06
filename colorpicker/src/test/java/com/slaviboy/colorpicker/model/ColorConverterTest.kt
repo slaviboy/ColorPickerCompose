@@ -28,6 +28,14 @@ class ColorConverterTest {
     }
 
     @Test
+    fun `rgb to hsv for achromatic gray has zero hue and saturation`() {
+        val hsv = ColorConverter.rgbToHsv(128, 128, 128)
+        assertEquals(0, hsv.h)
+        assertEquals(0, hsv.s)
+        assertTrue(abs(hsv.v - 50) <= 1)
+    }
+
+    @Test
     fun `rgb to hsv round trip over a sampled grid`() {
         for (h in 0 until 360 step 15) {
             for (s in 0..100 step 20) {
@@ -48,6 +56,14 @@ class ColorConverterTest {
     fun `hsl pure red matches hsv pure red`() {
         assertEquals(RgbaColor(255, 0, 0, 255), ColorConverter.hslToRgb(0, 100, 50))
         assertEquals(HslColor(0, 100, 50), ColorConverter.rgbToHsl(255, 0, 0))
+    }
+
+    @Test
+    fun `rgb to hsl for achromatic gray has zero hue and saturation`() {
+        val hsl = ColorConverter.rgbToHsl(128, 128, 128)
+        assertEquals(0, hsl.h)
+        assertEquals(0, hsl.s)
+        assertTrue(abs(hsl.l - 50) <= 1)
     }
 
     @Test
@@ -101,10 +117,32 @@ class ColorConverterTest {
     }
 
     @Test
+    fun `rgb to hwb for white and black`() {
+        assertEquals(HwbColor(0, 100, 0), ColorConverter.rgbToHwb(255, 255, 255))
+        assertEquals(HwbColor(0, 0, 100), ColorConverter.rgbToHwb(0, 0, 0))
+    }
+
+    @Test
+    fun `hwb normalizes toward gray when white plus black exceeds 100 percent`() {
+        // w=70, b=60 sum to 130% - must be scaled down proportionally rather than clipped,
+        // which for equal-ish w/b relative to the hue's pure channels yields a near-neutral gray.
+        val rgb = ColorConverter.hwbToRgb(0, 70, 60)
+        assertTrue(abs(rgb.r - rgb.g) <= 2)
+        assertTrue(abs(rgb.g - rgb.b) <= 2)
+        assertTrue(abs(rgb.r - 137) <= 3)
+    }
+
+    @Test
     fun `cmyk pure colors`() {
         assertEquals(RgbaColor(255, 0, 0, 255), ColorConverter.cmykToRgb(0, 100, 100, 0))
         assertEquals(RgbaColor(0, 0, 0, 255), ColorConverter.cmykToRgb(0, 0, 0, 100))
         assertEquals(CmykColor(0, 100, 100, 0), ColorConverter.rgbToCmyk(255, 0, 0))
+    }
+
+    @Test
+    fun `rgb to cmyk for white and black`() {
+        assertEquals(CmykColor(0, 0, 0, 0), ColorConverter.rgbToCmyk(255, 255, 255))
+        assertEquals(CmykColor(0, 0, 0, 100), ColorConverter.rgbToCmyk(0, 0, 0))
     }
 
     @Test
@@ -116,6 +154,27 @@ class ColorConverterTest {
         assertEquals(RgbaColor(255, 0, 0, 128), ColorConverter.hexToRgb("#FF000080"))
         assertNull(ColorConverter.hexToRgb("#ZZZZZZ"))
         assertNull(ColorConverter.hexToRgb("#FF00"))
+    }
+
+    @Test
+    fun `hex formatting respects the upperCase flag`() {
+        assertEquals("#ff0000", ColorConverter.rgbToHex(255, 0, 0, upperCase = false))
+        assertEquals("#FF0000", ColorConverter.rgbToHex(255, 0, 0, upperCase = true))
+    }
+
+    @Test
+    fun `hex parsing accepts lowercase and mixed case digits`() {
+        assertEquals(RgbaColor(255, 0, 0, 255), ColorConverter.hexToRgb("#ff0000"))
+        assertEquals(RgbaColor(171, 205, 239, 255), ColorConverter.hexToRgb("abcdef"))
+        assertEquals(RgbaColor(171, 205, 239, 255), ColorConverter.hexToRgb("AbCdEf"))
+    }
+
+    @Test
+    fun `hex parsing rejects malformed input`() {
+        assertNull(ColorConverter.hexToRgb(""))
+        assertNull(ColorConverter.hexToRgb("#"))
+        assertNull(ColorConverter.hexToRgb("#FFFFFFF")) // 7 digits, not 6 or 8
+        assertNull(ColorConverter.hexToRgb("#GGGGGG")) // not hex digits
     }
 
     @Test

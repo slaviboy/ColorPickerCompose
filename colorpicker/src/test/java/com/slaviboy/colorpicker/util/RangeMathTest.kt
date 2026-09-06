@@ -16,6 +16,16 @@ class RangeMathTest {
     }
 
     @Test
+    fun `valueForOffset returns the lower bound when size is zero`() {
+        assertEquals(50f, valueForOffset(offset = 999f, lower = 50f, upper = 100f, size = 0f), 0.001f)
+    }
+
+    @Test
+    fun `offsetForValue returns zero when lower equals upper`() {
+        assertEquals(0f, offsetForValue(value = 42f, lower = 10f, upper = 10f, size = 100f), 0.001f)
+    }
+
+    @Test
     fun `inverted range maps offset zero to lower bound`() {
         // Mirrors sliders like Hue/Value whose Range is (upper, lower) inverted, e.g. Range(360,0).
         val v = valueForOffset(offset = 0f, lower = 360f, upper = 0f, size = 100f)
