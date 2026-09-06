@@ -23,14 +23,14 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun RectangularSelectorArea(
-    modifier: Modifier = Modifier,
-    style: SelectorStyle = SelectorStyle(),
-    cornerRadius: Dp = 0.dp,
     selectorColor: Color,
     selectorXFraction: Float,
     selectorYFraction: Float,
     onDrag: (xFraction: Float, yFraction: Float) -> Unit,
     background: DrawScope.(bounds: Rect) -> Unit,
+    modifier: Modifier = Modifier,
+    style: SelectorStyle = SelectorStyle(),
+    cornerRadius: Dp = 0.dp,
 ) {
     val density = LocalDensity.current
     val paddingPx = with(density) { style.contentPadding().toPx() }

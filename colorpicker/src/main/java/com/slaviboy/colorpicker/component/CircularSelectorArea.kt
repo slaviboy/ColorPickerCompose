@@ -21,13 +21,13 @@ import kotlin.math.hypot
  */
 @Composable
 fun CircularSelectorArea(
-    modifier: Modifier = Modifier,
-    style: SelectorStyle = SelectorStyle(),
     selectorColor: Color,
     selectorAngleDeg: Float,
     selectorDistanceFraction: Float,
     onDrag: (angleDeg: Float, distanceFraction: Float) -> Unit,
     background: DrawScope.(center: Offset, radiusPx: Float) -> Unit,
+    modifier: Modifier = Modifier,
+    style: SelectorStyle = SelectorStyle(),
 ) {
     val density = LocalDensity.current
     val paddingPx = with(density) { style.contentPadding().toPx() }

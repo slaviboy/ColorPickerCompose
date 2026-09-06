@@ -31,14 +31,14 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun LinearSelectorArea(
-    modifier: Modifier = Modifier,
-    style: SelectorStyle = SelectorStyle(),
-    cornerRadius: Dp = 0.dp,
-    orientation: Orientation = Orientation.Vertical,
     selectorColor: Color,
     selectorFraction: Float,
     onDrag: (fraction: Float) -> Unit,
     background: DrawScope.(bounds: Rect) -> Unit,
+    modifier: Modifier = Modifier,
+    style: SelectorStyle = SelectorStyle(),
+    cornerRadius: Dp = 0.dp,
+    orientation: Orientation = Orientation.Vertical,
 ) {
     val density = LocalDensity.current
     val mainAxisPaddingPx = with(density) { style.contentPadding().toPx() }

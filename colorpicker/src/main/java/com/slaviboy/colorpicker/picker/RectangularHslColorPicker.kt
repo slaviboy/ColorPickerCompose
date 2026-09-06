@@ -27,14 +27,14 @@ import com.slaviboy.colorpicker.window.SaturationLightnessSquare
  */
 @Composable
 fun RectangularHslColorPicker(
-    state: ColorPickerState = rememberColorPickerState(),
     modifier: Modifier = Modifier,
+    state: ColorPickerState = rememberColorPickerState(),
     mainSize: Dp = 220.dp,
-    sliderWidth: Dp = 28.dp,
+    sliderWidth: Dp = 36.dp,
     spacing: Dp = 12.dp,
     style: SelectorStyle = SelectorStyle(),
     valueFormat: ColorFormat = ColorFormat.Hsl,
-    showTextField: Boolean = true,
+    showTextField: Boolean = false
 ) {
     Column(modifier) {
         Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
